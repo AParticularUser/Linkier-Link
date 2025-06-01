@@ -4,6 +4,7 @@ use crate::link::consts::vars::*;
 
 ////status
 //jab
+//added a jab-4
 unsafe extern "C" fn attack_status_main(agent: &mut L2CFighterCommon) -> L2CValue {
     agent.status_Attack();
     VarModule::off_flag(agent.module_accessor, status::LINK_FLAG_ATTACK_IS_BUFFERD);
@@ -40,6 +41,7 @@ pub unsafe fn attack_status_main_loop(agent: &mut L2CFighterCommon) -> L2CValue 
     agent.status_Attack_Main()
 }
 //dash-attack
+//fixing shield visibility not switching when grabbing an item
 unsafe extern "C" fn attack_dash_status_init(agent: &mut L2CFighterCommon) -> L2CValue {
     if ItemModule::is_have_item(agent.module_accessor, 0) {
         VarModule::on_flag(agent.module_accessor, status::LINK_FLAG_HAS_ITEM_ANIM);
@@ -69,6 +71,7 @@ unsafe extern "C" fn attack_11_game(agent: &mut L2CAgentBase) {
         macros::ATTACK(agent, 1, 0, Hash40::new("top"), 3.0, 361, 25, 0, 25, 1.8, 0.0, 8.0, 14.0, Some(0.0), Some(8.0), Some(7.0), 1.6, 1.0, *ATTACK_SETOFF_KIND_ON, *ATTACK_LR_CHECK_F, false, 0, 0.0, 0, false, false, false, false, true, *COLLISION_SITUATION_MASK_GA, *COLLISION_CATEGORY_MASK_ALL, *COLLISION_PART_MASK_ALL, false, Hash40::new("collision_attr_cutup"), *ATTACK_SOUND_LEVEL_S, *COLLISION_SOUND_ATTR_CUTUP, *ATTACK_REGION_SWORD);
         macros::ATTACK(agent, 2, 0, Hash40::new("top"), 3.0, 180, 15, 0, 20, 1.8, 0.0, 8.0, 18.0, Some(0.0), Some(8.0), Some(7.0), 1.6, 1.0, *ATTACK_SETOFF_KIND_ON, *ATTACK_LR_CHECK_F, false, 0, 0.0, 0, false, false, false, false, true, *COLLISION_SITUATION_MASK_GA, *COLLISION_CATEGORY_MASK_FIGHTER, *COLLISION_PART_MASK_ALL, false, Hash40::new("collision_attr_cutup"), *ATTACK_SOUND_LEVEL_S, *COLLISION_SOUND_ATTR_CUTUP, *ATTACK_REGION_SWORD);
         macros::ATTACK(agent, 3, 0, Hash40::new("top"), 3.0, 361, 15, 0, 20, 1.8, 0.0, 8.0, 18.0, Some(0.0), Some(8.0), Some(7.0), 1.6, 1.0, *ATTACK_SETOFF_KIND_ON, *ATTACK_LR_CHECK_F, false, 0, 0.0, 0, false, false, false, false, true, *COLLISION_SITUATION_MASK_GA, *COLLISION_CATEGORY_MASK_ALL, *COLLISION_PART_MASK_ALL, false, Hash40::new("collision_attr_cutup"), *ATTACK_SOUND_LEVEL_S, *COLLISION_SOUND_ATTR_CUTUP, *ATTACK_REGION_SWORD);
+        //moved sword-beam from side-smash
         if DamageModule::damage(agent.module_accessor, 0) <= 0.0 
         || VarModule::is_flag(agent.module_accessor, instance::LINK_FLAG_SKYWARD_STRIKE_IS_CHARGED) {
             VarModule::off_flag(agent.module_accessor, instance::LINK_FLAG_SKYWARD_STRIKE_IS_CHARGED);
@@ -105,6 +108,7 @@ unsafe extern "C" fn attack_12_game(agent: &mut L2CAgentBase) {
     }
 }
 //jab-3
+//new jab-3
 unsafe extern "C" fn attack_13_game(agent: &mut L2CAgentBase) {
     frame(agent.lua_state_agent, 8.0);
     if macros::is_excute(agent) {
@@ -160,6 +164,7 @@ unsafe extern "C" fn attack_13_exp(agent: &mut L2CAgentBase) {
     }
 }
 //jab-4
+//splin slash from botw/totk
 unsafe extern "C" fn attack_14_game(agent: &mut L2CAgentBase) {
     frame(agent.lua_state_agent, 14.0);
     if macros::is_excute(agent) {
@@ -214,13 +219,12 @@ unsafe extern "C" fn attack_14_exp(agent: &mut L2CAgentBase) {
     }
 }
 //dash-attack
+//running slash from botw/totk
 unsafe extern "C" fn attack_dash_game(agent: &mut L2CAgentBase) {
     frame(agent.lua_state_agent, 5.0);
     if macros::is_excute(agent) {
         macros::ATTACK(agent, 0, 0, Hash40::new("sword2"), 14.0, 45, 85, 0, 70, 3.2, 8.5, 0.0, -2.0, None, None, None, 1.2, 1.0, *ATTACK_SETOFF_KIND_ON, *ATTACK_LR_CHECK_F, false, 0, 0.0, 0, false, false, false, false, true, *COLLISION_SITUATION_MASK_GA, *COLLISION_CATEGORY_MASK_ALL, *COLLISION_PART_MASK_ALL, false, Hash40::new("collision_attr_cutup"), *ATTACK_SOUND_LEVEL_L, *COLLISION_SOUND_ATTR_CUTUP, *ATTACK_REGION_SWORD);
         macros::ATTACK(agent, 1, 0, Hash40::new("sword2"), 13.0, 50, 85, 0, 85, 3.5, 3.0, 0.0, -2.0, None, None, None, 1.0, 1.0, *ATTACK_SETOFF_KIND_ON, *ATTACK_LR_CHECK_F, false, 0, 0.0, 0, false, false, false, false, true, *COLLISION_SITUATION_MASK_GA, *COLLISION_CATEGORY_MASK_ALL, *COLLISION_PART_MASK_ALL, false, Hash40::new("collision_attr_cutup"), *ATTACK_SOUND_LEVEL_L, *COLLISION_SOUND_ATTR_CUTUP, *ATTACK_REGION_SWORD);
-        // macros::ATK_SET_SHIELD_SETOFF_MUL_arg4(agent, 0, 1, 2, 1.4);
-        // AttackModule::set_attack_height_all(agent.module_accessor, AttackHeight(*ATTACK_HEIGHT_HIGH), false);
     }
     frame(agent.lua_state_agent, 6.0);
     if macros::is_excute(agent) {
@@ -242,20 +246,11 @@ unsafe extern "C" fn attack_dash_eff(agent: &mut L2CAgentBase) {
     if macros::is_excute(agent) {
         macros::FOOT_EFFECT(agent, Hash40::new("sys_atk_smoke"), Hash40::new("top"), -6, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, false);
     }
-    // frame(agent.lua_state_agent, 11.0);
-    // if macros::is_excute(agent) {
-    //     macros::EFFECT(agent, Hash40::new("sys_smash_flash"), Hash40::new("sword1"), 13, 0, 0, 0, 0, 0, 0.9, 0, 0, 0, 0, 0, 0, true);
-    //     macros::LAST_EFFECT_SET_RATE(agent, 1.5);
-    // }
     frame(agent.lua_state_agent, 4.0);
     if macros::is_excute(agent) {
         macros::AFTER_IMAGE4_ON_arg29(agent, Hash40::new("tex_link_sword1"), Hash40::new("tex_link_sword2"), 5, Hash40::new("sword1"), 1, 0, 0, Hash40::new("sword1"), 14.6, 0.2, -0.2, true, Hash40::new("null"), Hash40::new("sword1"), 0, 0, 0, 0, 0, 0, 1, 0, *EFFECT_AXIS_X, 0, *TRAIL_BLEND_ALPHA, 101, *TRAIL_CULL_NONE, 1.3, 0.2);
         macros::EFFECT_FOLLOW(agent, Hash40::new("link_sword"), Hash40::new("sword1"), 0, 0, 0, 0, 0, 0, 1, true);
     }
-    // frame(agent.lua_state_agent, 21.0);
-    // if macros::is_excute(agent) {
-    //     macros::LANDING_EFFECT(agent, Hash40::new("sys_down_smoke"), Hash40::new("top"), 10, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, false);
-    // }
     frame(agent.lua_state_agent, 5.0);
     if macros::is_excute(agent) {
         macros::FOOT_EFFECT(agent, Hash40::new("sys_turn_smoke"), Hash40::new("top"), 3, 0, 0, 0, 0, 0, 0.9, 0, 0, 0, 0, 0, 0, false);
@@ -268,10 +263,6 @@ unsafe extern "C" fn attack_dash_eff(agent: &mut L2CAgentBase) {
     if macros::is_excute(agent) {
         macros::FOOT_EFFECT(agent, Hash40::new("sys_turn_smoke"), Hash40::new("top"), 3, 0, 0, 0, 0, 0, 0.9, 0, 0, 0, 0, 0, 0, false);
     }
-    // frame(agent.lua_state_agent, 13.0);
-    // if macros::is_excute(agent) {
-    //     macros::FOOT_EFFECT(agent, Hash40::new("sys_turn_smoke"), Hash40::new("top"), 3, 0, 0, 0, 0, 0, 0.9, 0, 0, 0, 0, 0, 0, false);
-    // }
     frame(agent.lua_state_agent, 20.0);
     if macros::is_excute(agent) {
         macros::EFFECT_OFF_KIND(agent, Hash40::new("link_sword"), false, false);
@@ -283,15 +274,10 @@ unsafe extern "C" fn attack_dash_snd(agent: &mut L2CAgentBase) {
         macros::PLAY_SEQUENCE(agent, Hash40::new("seq_link_rnd_attack"));
         macros::PLAY_SE(agent, Hash40::new("se_link_swing_ll"));
     }
-    // wait(agent.lua_state_agent, 4.0);
-    // if macros::is_excute(agent) {
-    //     macros::PLAY_LANDING_SE(agent, Hash40::new("se_link_landing02"));
-    // }
 }
 unsafe extern "C" fn attack_dash_exp(agent: &mut L2CAgentBase) {
     if macros::is_excute(agent) {
         AttackModule::set_attack_reference_joint_id(agent.module_accessor, Hash40::new("sword1"), AttackDirectionAxis(*ATTACK_DIRECTION_Z), AttackDirectionAxis(*ATTACK_DIRECTION_X), AttackDirectionAxis(*ATTACK_DIRECTION_Y));
-        // ItemModule::set_have_item_visibility(agent.module_accessor, false, 0);
         slope!(agent, *MA_MSC_CMD_SLOPE_SLOPE, *SLOPE_STATUS_NONE);
     }
     frame(agent.lua_state_agent, 4.0);

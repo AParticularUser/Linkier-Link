@@ -36,6 +36,7 @@ unsafe extern "C" fn guard_status_exec(agent: &mut L2CFighterCommon) -> L2CValue
     }
 }
 //parry
+//added reflector to parry
 unsafe extern "C" fn guard_off_game(agent: &mut L2CAgentBase) {
     if macros::is_excute(agent) {
         shield!(agent, *MA_MSC_CMD_SHIELD_ON, *COLLISION_KIND_REFLECTOR, 0, *FIGHTER_REFLECTOR_GROUP_JUST_SHIELD);

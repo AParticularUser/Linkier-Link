@@ -4,6 +4,7 @@ use crate::link::consts::vars::*;
 
 ////status
 //side-tilt
+//fixing shield visibility not switching when grabbing an item
 unsafe extern "C" fn attack_s3_status_init(agent: &mut L2CFighterCommon) -> L2CValue {
     if ItemModule::is_have_item(agent.module_accessor, 0) {
         VarModule::on_flag(agent.module_accessor, status::LINK_FLAG_HAS_ITEM_ANIM);
@@ -21,6 +22,7 @@ unsafe extern "C" fn attack_s3_status_exec(agent: &mut L2CFighterCommon) -> L2CV
     0.into()
 }
 //up-tilt
+//fixing shield visibility not switching when grabbing an item
 unsafe extern "C" fn attack_hi3_status_init(agent: &mut L2CFighterCommon) -> L2CValue {
     if ItemModule::is_have_item(agent.module_accessor, 0) {
         VarModule::on_flag(agent.module_accessor, status::LINK_FLAG_HAS_ITEM_ANIM);
@@ -38,6 +40,7 @@ unsafe extern "C" fn attack_hi3_status_exec(agent: &mut L2CFighterCommon) -> L2C
     0.into()
 }
 //down-tilt
+//fixing shield visibility not switching when grabbing an item
 unsafe extern "C" fn attack_lw3_status_init(agent: &mut L2CFighterCommon) -> L2CValue {
     if ItemModule::is_have_item(agent.module_accessor, 0) {
         VarModule::on_flag(agent.module_accessor, status::LINK_FLAG_HAS_ITEM_ANIM);
@@ -105,7 +108,6 @@ unsafe extern "C" fn attack_s3_snd(agent: &mut L2CAgentBase) {
     }
 }
 unsafe extern "C" fn attack_s3_exp(agent: &mut L2CAgentBase) {
-    // frame(agent.lua_state_agent, 0.0);
     if macros::is_excute(agent) {
         slope!(agent, *MA_MSC_CMD_SLOPE_SLOPE_INTP, *SLOPE_STATUS_LR, 3);
     }
@@ -161,7 +163,6 @@ unsafe extern "C" fn attack_s3_hi_snd(agent: &mut L2CAgentBase) {
 unsafe extern "C" fn attack_s3_hi_exp(agent: &mut L2CAgentBase) {
     if macros::is_excute(agent) {
         AttackModule::set_attack_reference_joint_id(agent.module_accessor, Hash40::new("sword1"), AttackDirectionAxis(*ATTACK_DIRECTION_X), AttackDirectionAxis(*ATTACK_DIRECTION_Y), AttackDirectionAxis(*ATTACK_DIRECTION_Z));
-        // ItemModule::set_have_item_visibility(agent.module_accessor, false, 0);
         slope!(agent, *MA_MSC_CMD_SLOPE_SLOPE, *SLOPE_STATUS_LR);
     }
     frame(agent.lua_state_agent, 8.0);
@@ -227,7 +228,6 @@ unsafe extern "C" fn attack_s3_lw_snd(agent: &mut L2CAgentBase) {
 unsafe extern "C" fn attack_s3_lw_exp(agent: &mut L2CAgentBase) {
     if macros::is_excute(agent) {
         AttackModule::set_attack_reference_joint_id(agent.module_accessor, Hash40::new("sword1"), AttackDirectionAxis(*ATTACK_DIRECTION_Z), AttackDirectionAxis(*ATTACK_DIRECTION_X), AttackDirectionAxis(*ATTACK_DIRECTION_Y));
-        // ItemModule::set_have_item_visibility(agent.module_accessor, false, 0);
         slope!(agent, *MA_MSC_CMD_SLOPE_SLOPE, *SLOPE_STATUS_LR);
     }
     frame(agent.lua_state_agent, 13.0);
@@ -249,7 +249,6 @@ unsafe extern "C" fn attack_s3_lw_exp(agent: &mut L2CAgentBase) {
 unsafe extern "C" fn attack_hi3_exp(agent: &mut L2CAgentBase) {
     if macros::is_excute(agent) {
         AttackModule::set_attack_reference_joint_id(agent.module_accessor, Hash40::new("sword1"), AttackDirectionAxis(*ATTACK_DIRECTION_Z), AttackDirectionAxis(*ATTACK_DIRECTION_X), AttackDirectionAxis(*ATTACK_DIRECTION_Y));
-        // ItemModule::set_have_item_visibility(agent.module_accessor, false, 0);
         slope!(agent, *MA_MSC_CMD_SLOPE_SLOPE, *SLOPE_STATUS_LR);
     }
     frame(agent.lua_state_agent, 6.0);
@@ -265,7 +264,6 @@ unsafe extern "C" fn attack_hi3_exp(agent: &mut L2CAgentBase) {
 unsafe extern "C" fn attack_lw3_exp(agent: &mut L2CAgentBase) {
     if macros::is_excute(agent) {
         AttackModule::set_attack_reference_joint_id(agent.module_accessor, Hash40::new("sword1"), AttackDirectionAxis(*ATTACK_DIRECTION_Z), AttackDirectionAxis(*ATTACK_DIRECTION_X), AttackDirectionAxis(*ATTACK_DIRECTION_Y));
-        // ItemModule::set_have_item_visibility(agent.module_accessor, false, 0);
         slope!(agent, *MA_MSC_CMD_SLOPE_SLOPE, *SLOPE_STATUS_TOP);
     }
     frame(agent.lua_state_agent, 11.0);

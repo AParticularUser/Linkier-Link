@@ -6,8 +6,6 @@ unsafe extern "C" fn common_frame(agent: &mut L2CFighterCommon) {
     if VarModule::is_flag(agent.module_accessor, status::FIGHTER_FLAG_LINK_FINISHING_BLOW_DEAD) {
         if WorkModule::get_int(agent.module_accessor, *FIGHTER_INSTANCE_WORK_ID_INT_KNOCKOUT_FRAME) == 0 
         || StatusModule::status_kind(agent.module_accessor) != *FIGHTER_STATUS_KIND_THROWN 
-        || GroundModule::is_attach(agent.module_accessor)
-        // || agent.global_table[global_table::SITUATION_KIND].get_i32() != *SITUATION_KIND_GROUND 
         {
             VarModule::off_flag(agent.module_accessor, status::FIGHTER_FLAG_LINK_FINISHING_BLOW_DEAD);
             StatusModule::change_status_force(agent.module_accessor, *FIGHTER_STATUS_KIND_DEAD, false);
@@ -38,7 +36,6 @@ pub mod funcs;
 pub mod consts;
 
 pub fn install() {
-    // funcs::install();
     Agent::new("fighter")
 	.on_line(Main, common_frame)
 	.install();

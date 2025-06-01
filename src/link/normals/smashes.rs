@@ -1,13 +1,12 @@
 use crate::imports::*;
 use crate::common::consts::*;
 use crate::link::consts::{
-    // param, 
-    vars::*
+    vars::*,
+    *
 };
 
 
-////changed side-smash to jump-strike
-//status
+////status
 unsafe extern "C" fn attack_s4_status_main(agent: &mut L2CFighterCommon) -> L2CValue {
     agent.status_AttackS4();
     VarModule::off_flag(agent.module_accessor, status::LINK_FLAG_ATTACK_S4_JUMP);
@@ -18,26 +17,23 @@ unsafe extern "C" fn attack_s4_status_main(agent: &mut L2CFighterCommon) -> L2CV
 }
 pub unsafe fn attack_s4_status_main_loop(agent: &mut L2CFighterCommon) -> L2CValue {
     if MotionModule::motion_kind(agent.module_accessor) == hash40("attack_s4_s") {
+        //jump
         if VarModule::is_flag(agent.module_accessor, status::LINK_FLAG_ATTACK_S4_JUMP) {
             VarModule::off_flag(agent.module_accessor, status::LINK_FLAG_ATTACK_S4_JUMP);
             //kinetic stuff
             let lr = PostureModule::lr(agent.module_accessor);
             sv_kinetic_energy!(clear_speed, agent, FIGHTER_KINETIC_ENERGY_ID_MOTION);
-            let speed_brake_x = 0.023;
-            let speed_limit_y = -4.0;
-            let speed_accel_y = -0.15;
-            let speed_x = 1.2;
-            let speed_y = 1.7;
             KineticModule::change_kinetic(agent.module_accessor, *FIGHTER_KINETIC_TYPE_AIR_STOP);
-            sv_kinetic_energy!(set_limit_speed, agent, *FIGHTER_KINETIC_ENERGY_ID_GRAVITY, speed_limit_y);
-            sv_kinetic_energy!(set_stable_speed, agent, *FIGHTER_KINETIC_ENERGY_ID_GRAVITY, speed_limit_y);
-            sv_kinetic_energy!(set_accel, agent, *FIGHTER_KINETIC_ENERGY_ID_GRAVITY, speed_accel_y);
-            sv_kinetic_energy!(set_speed, agent, *FIGHTER_KINETIC_ENERGY_ID_GRAVITY, speed_y);
-            sv_kinetic_energy!(set_brake, agent, *FIGHTER_KINETIC_ENERGY_ID_STOP, speed_brake_x, 0.0);
-            sv_kinetic_energy!(set_speed, agent, *FIGHTER_KINETIC_ENERGY_ID_STOP, speed_x*lr, 0.0);
+            sv_kinetic_energy!(set_limit_speed, agent, *FIGHTER_KINETIC_ENERGY_ID_GRAVITY, param::LINK_FLOAT_ATTACK_S4_LIMIT_Y);
+            sv_kinetic_energy!(set_stable_speed, agent, *FIGHTER_KINETIC_ENERGY_ID_GRAVITY, param::LINK_FLOAT_ATTACK_S4_LIMIT_Y);
+            sv_kinetic_energy!(set_accel, agent, *FIGHTER_KINETIC_ENERGY_ID_GRAVITY, param::LINK_FLOAT_ATTACK_S4_ACCEL_Y);
+            sv_kinetic_energy!(set_speed, agent, *FIGHTER_KINETIC_ENERGY_ID_GRAVITY, param::LINK_FLOAT_ATTACK_S4_SPEED_Y);
+            sv_kinetic_energy!(set_brake, agent, *FIGHTER_KINETIC_ENERGY_ID_STOP, param::LINK_FLOAT_ATTACK_S4_BRAKE_X, 0.0);
+            sv_kinetic_energy!(set_speed, agent, *FIGHTER_KINETIC_ENERGY_ID_STOP, param::LINK_FLOAT_ATTACK_S4_SPEED_X*lr, 0.0);
             agent.set_situation(SITUATION_KIND_AIR.into());
             GroundModule::correct(agent.module_accessor, GroundCorrectKind(*GROUND_CORRECT_KIND_AIR));
         }
+        //landing
         if WorkModule::is_flag(agent.module_accessor, *FIGHTER_STATUS_ATTACK_AIR_FLAG_ENABLE_LANDING) 
         && agent.global_table[global_table::SITUATION_KIND].get_i32() == *SITUATION_KIND_GROUND {
             MotionModule::change_motion(agent.module_accessor, Hash40::new("attack_s4_landing"), 0.0, 1.0, false, 0.0, false, false);
@@ -47,6 +43,7 @@ pub unsafe fn attack_s4_status_main_loop(agent: &mut L2CFighterCommon) -> L2CVal
             agent.set_situation(SITUATION_KIND_GROUND.into());
             GroundModule::correct(agent.module_accessor, GroundCorrectKind(*GROUND_CORRECT_KIND_GROUND_CLIFF_STOP));
         }
+    //end
     }else {
         if agent.global_table[global_table::SITUATION_KIND].get_i32() != *SITUATION_KIND_GROUND {
             agent.change_status(FIGHTER_STATUS_KIND_FALL.into(), false.into());
@@ -64,14 +61,14 @@ pub unsafe fn attack_s4_status_main_loop(agent: &mut L2CFighterCommon) -> L2CVal
     }
     0.into()
 }
-//motion
+////motion
 //side-smash
+//changed side-smash to jump-strike
 unsafe extern "C" fn attack_s4_game(agent: &mut L2CAgentBase) {
     frame(agent.lua_state_agent, 11.0);
     if macros::is_excute(agent) {
         WorkModule::on_flag(agent.module_accessor, *FIGHTER_STATUS_ATTACK_FLAG_START_SMASH_HOLD);
     }
-
     frame(agent.lua_state_agent, 14.0);
     if macros::is_excute(agent) {
         macros::ATTACK(agent, 0, 0, Hash40::new("armr"), 2.0, 35, 12, 0, 75, 3.5, 1.0, 0.0, 0.0, None, None, None, 1.0, 1.0, *ATTACK_SETOFF_KIND_ON, *ATTACK_LR_CHECK_F, false, 0, 0.0, 0, false, false, false, false, true, *COLLISION_SITUATION_MASK_GA, *COLLISION_CATEGORY_MASK_ALL, *COLLISION_PART_MASK_ALL, false, Hash40::new("collision_attr_cutup"), *ATTACK_SOUND_LEVEL_S, *COLLISION_SOUND_ATTR_CUTUP, *ATTACK_REGION_SWORD);
@@ -105,9 +102,10 @@ unsafe extern "C" fn attack_s4_game(agent: &mut L2CAgentBase) {
     frame(agent.lua_state_agent, 37.0);
     if macros::is_excute(agent) {
         WorkModule::on_flag(agent.module_accessor, *FIGHTER_STATUS_ATTACK_AIR_FLAG_ENABLE_LANDING);
+        //increase fall speed
         let energy = KineticModule::get_energy(agent.module_accessor, *FIGHTER_KINETIC_ENERGY_ID_GRAVITY)  as *mut smash::app::FighterKineticEnergyGravity;
         let accel = smash::app::lua_bind::FighterKineticEnergyGravity::get_accel( energy);
-        smash::app::lua_bind::FighterKineticEnergyGravity::set_accel(energy, accel*2.0);
+        smash::app::lua_bind::FighterKineticEnergyGravity::set_accel(energy, accel*param::LINK_FLOAT_ATTACK_S4_ACCEL_MUL);
     }
 }
 unsafe extern "C" fn attack_s4_snd(agent: &mut L2CAgentBase) {
@@ -123,14 +121,9 @@ unsafe extern "C" fn attack_s4_snd(agent: &mut L2CAgentBase) {
     }
     frame(agent.lua_state_agent, 22.0);
     if macros::is_excute(agent) {
-        // macros::PLAY_SE(agent, Hash40::new("vc_link_attack05"));
         macros::PLAY_SE(agent, Hash40::new("se_common_smashswing_03"));
         macros::PLAY_SE(agent, Hash40::new("se_link_swing_m"));
     }
-    // frame(agent.lua_state_agent, 22.0);
-    // if macros::is_excute(agent) {
-    //     macros::PLAY_SE(agent, Hash40::new("vc_link_special_h01"));
-    // }
     frame(agent.lua_state_agent, 28.0);
     if macros::is_excute(agent) {
         macros::PLAY_SE(agent, Hash40::new("vc_link_attack09"));
@@ -153,7 +146,6 @@ unsafe extern "C" fn attack_s4_eff(agent: &mut L2CAgentBase) {
     frame(agent.lua_state_agent, 13.0);
     if macros::is_excute(agent) {
         macros::AFTER_IMAGE4_ON_arg29(agent, Hash40::new("tex_link_sword1"), Hash40::new("tex_link_sword2"), 4, Hash40::new("sword1"), 1, 0, 0, Hash40::new("sword1"), 14.6, 0.2, -0.2, true, Hash40::new("null"), Hash40::new("sword1"), 0, 0, 0, 0, 0, 0, 1, 0, *EFFECT_AXIS_X, 0, *TRAIL_BLEND_ALPHA, 101, *TRAIL_CULL_NONE, 1.3, 0.2);
-        // macros::EFFECT_FOLLOW(agent, Hash40::new("link_sword"), Hash40::new("sword1"), 0, 0, 0, 0, 0, 0, 1, true);
     }
     frame(agent.lua_state_agent, 13.0);
     if macros::is_excute(agent) {
@@ -162,33 +154,23 @@ unsafe extern "C" fn attack_s4_eff(agent: &mut L2CAgentBase) {
     frame(agent.lua_state_agent, 16.0);
     if macros::is_excute(agent) {
         macros::AFTER_IMAGE_OFF(agent, 3);
-        // macros::EFFECT_OFF_KIND(agent, Hash40::new("link_sword"), false, false);
     }
     frame(agent.lua_state_agent, 22.0);
     if macros::is_excute(agent) {
         macros::AFTER_IMAGE4_ON_arg29(agent, Hash40::new("tex_link_sword1"), Hash40::new("tex_link_sword2"), 4, Hash40::new("sword1"), 1, 0, 0, Hash40::new("sword1"), 14.6, 0.2, -0.2, true, Hash40::new("null"), Hash40::new("sword1"), 0, 0, 0, 0, 0, 0, 1, 0, *EFFECT_AXIS_X, 0, *TRAIL_BLEND_ALPHA, 101, *TRAIL_CULL_NONE, 1.3, 0.2);
-        // macros::EFFECT_FOLLOW(agent, Hash40::new("link_sword"), Hash40::new("sword1"), 0, 0, 0, 0, 0, 0, 1, true);
     }
     frame(agent.lua_state_agent, 24.0);
     if macros::is_excute(agent) {
         macros::AFTER_IMAGE_OFF(agent, 3);
-        // macros::EFFECT_OFF_KIND(agent, Hash40::new("link_sword"), false, false);
     }
     frame(agent.lua_state_agent, 35.0);
     if macros::is_excute(agent) {
         macros::AFTER_IMAGE4_ON_arg29(agent, Hash40::new("tex_link_sword1"), Hash40::new("tex_link_sword2"), 5, Hash40::new("sword1"), 1, 0, 0, Hash40::new("sword1"), 14.6, 0.2, -0.2, true, Hash40::new("null"), Hash40::new("sword1"), 0, 0, 0, 0, 0, 0, 1, 0, *EFFECT_AXIS_X, 0, *TRAIL_BLEND_ALPHA, 101, *TRAIL_CULL_NONE, 1.3, 0.2);
-        // macros::EFFECT_FOLLOW(agent, Hash40::new("link_sword"), Hash40::new("sword1"), 0, 0, 0, 0, 0, 0, 1, true);
     }
-    // frame(agent.lua_state_agent, 36.0);
-    // if macros::is_excute(agent) {
-    //     macros::AFTER_IMAGE_OFF(agent, 5);
-    //     macros::EFFECT_OFF_KIND(agent, Hash40::new("link_sword"), false, false);
-    // }
 }
 unsafe extern "C" fn attack_s4_exp(agent : &mut L2CAgentBase) {
     frame(agent.lua_state_agent, 4.0);
     if macros::is_excute(agent) {
-        // slope!(agent, *MA_MSC_CMD_SLOPE_SLOPE, *SLOPE_STATUS_LR);
         VisibilityModule::set_int64(agent.module_accessor, hash40("shield") as i64, hash40("shield_back") as i64);
         ItemModule::set_have_item_visibility(agent.module_accessor, false, 0);
     }
@@ -278,15 +260,11 @@ unsafe extern "C" fn attack_s4_charge_exp(agent: &mut L2CAgentBase) {
 }
 //side-smash-landing
 unsafe extern "C" fn attack_s4_landing_game(agent: &mut L2CAgentBase) {
-    // if macros::is_excute(agent) {
-    //     AttackModule::clear_all(agent.module_accessor);
-    // }
     frame(agent.lua_state_agent, 1.0);
     if macros::is_excute(agent) {
         macros::ATTACK(agent, 0, 0, Hash40::new("sword2"), 13.0, 48, 89, 0, 85, 4.5, 7.0, 2.3, -2.5, None, None, None, 1.5, 1.0, *ATTACK_SETOFF_KIND_ON, *ATTACK_LR_CHECK_F, false, 0, 0.0, 0, false, false, false, false, true, *COLLISION_SITUATION_MASK_GA, *COLLISION_CATEGORY_MASK_ALL, *COLLISION_PART_MASK_ALL, false, Hash40::new("collision_attr_cutup"), *ATTACK_SOUND_LEVEL_L, *COLLISION_SOUND_ATTR_CUTUP, *ATTACK_REGION_SWORD);
         macros::ATTACK(agent, 1, 0, Hash40::new("sword2"), 13.0, 48, 89, 0, 85, 4.5, 1.5, 2.3, -2.5, None, None, None, 1.5, 1.0, *ATTACK_SETOFF_KIND_ON, *ATTACK_LR_CHECK_F, false, 0, 0.0, 0, false, false, false, false, true, *COLLISION_SITUATION_MASK_GA, *COLLISION_CATEGORY_MASK_ALL, *COLLISION_PART_MASK_ALL, false, Hash40::new("collision_attr_cutup"), *ATTACK_SOUND_LEVEL_L, *COLLISION_SOUND_ATTR_CUTUP, *ATTACK_REGION_SWORD);
         macros::ATTACK(agent, 2, 0, Hash40::new("armr"), 12.0, 48, 89, 0, 85, 3.5, 1.0, 0.0, 0.0, None, None, None, 1.0, 1.0, *ATTACK_SETOFF_KIND_ON, *ATTACK_LR_CHECK_F, false, 0, 0.0, 0, false, false, false, false, true, *COLLISION_SITUATION_MASK_GA, *COLLISION_CATEGORY_MASK_ALL, *COLLISION_PART_MASK_ALL, false, Hash40::new("collision_attr_cutup"), *ATTACK_SOUND_LEVEL_L, *COLLISION_SOUND_ATTR_CUTUP, *ATTACK_REGION_SWORD);
-        // macros::ATTACK(agent, 3, 0, Hash40::new("top"), 12.0, 48, 89, 0, 85, 3.5, 0.0, 9.0, 3.0, None, None, None, 1.5, 1.0, *ATTACK_SETOFF_KIND_OFF, *ATTACK_LR_CHECK_F, false, 0, 0.0, 0, false, false, false, false, true, *COLLISION_SITUATION_MASK_GA, *COLLISION_CATEGORY_MASK_ALL, *COLLISION_PART_MASK_ALL, false, Hash40::new("collision_attr_cutup"), *ATTACK_SOUND_LEVEL_L, *COLLISION_SOUND_ATTR_CUTUP, *ATTACK_REGION_SWORD);
     }
     wait(agent.lua_state_agent, 1.0);
     if macros::is_excute(agent) {
@@ -308,7 +286,6 @@ unsafe extern "C" fn attack_s4_landing_snd(agent : &mut L2CAgentBase) {
     if macros::is_excute(agent) {
         macros::PLAY_LANDING_SE(agent, Hash40::new("se_link_attackair_l01"));
     }
-
 }
 unsafe extern "C" fn attack_s4_landing_eff(agent: &mut L2CAgentBase) {
     frame(agent.lua_state_agent, 1.0);
@@ -345,12 +322,15 @@ unsafe extern "C" fn attack_s4_landing_exp(agent : &mut L2CAgentBase) {
     }
     frame(agent.lua_state_agent, 23.0);
     if macros::is_excute(agent) {
-        VisibilityModule::set_int64(agent.module_accessor, hash40("shield") as i64, hash40("shield_normal") as i64);
         ItemModule::set_have_item_visibility(agent.module_accessor, true, 0);
+        //fixing shield visibility not switching when grabbing an item
+        if !ItemModule::is_have_item(agent.module_accessor, 0) {
+            VisibilityModule::set_int64(agent.module_accessor, hash40("shield") as i64, hash40("shield_normal") as i64);
+        }
     }
 }
-////changed up-smash to vertical-spin-attack
-//motion
+//up-smash
+//changed up-smash to vertical-spin-attack
 unsafe extern "C" fn attack_hi4_game(agent: &mut L2CAgentBase) {
     frame(agent.lua_state_agent, 7.0);
     if macros::is_excute(agent) {
@@ -370,8 +350,6 @@ unsafe extern "C" fn attack_hi4_game(agent: &mut L2CAgentBase) {
         AttackModule::clear(agent.module_accessor, 3, false);
         macros::ATTACK(agent, 0, 0, Hash40::new("sword2"), 11.0, 361, 88, 0, 55, 4.3, 7.0, 0.0, -3.0, None, None, None, 1.0, 1.0, *ATTACK_SETOFF_KIND_OFF, *ATTACK_LR_CHECK_POS, false, 0, 0.0, 0, false, false, false, false, true, *COLLISION_SITUATION_MASK_GA, *COLLISION_CATEGORY_MASK_ALL, *COLLISION_PART_MASK_ALL, false, Hash40::new("collision_attr_cutup"), *ATTACK_SOUND_LEVEL_L, *COLLISION_SOUND_ATTR_CUTUP, *ATTACK_REGION_SWORD);
         macros::ATTACK(agent, 1, 0, Hash40::new("sword2"), 11.0, 361, 88, 0, 55, 4.3, 1.0, 0.0, -3.0, None, None, None, 1.0, 1.0, *ATTACK_SETOFF_KIND_OFF, *ATTACK_LR_CHECK_POS, false, 0, 0.0, 0, false, false, false, false, true, *COLLISION_SITUATION_MASK_GA, *COLLISION_CATEGORY_MASK_ALL, *COLLISION_PART_MASK_ALL, false, Hash40::new("collision_attr_cutup"), *ATTACK_SOUND_LEVEL_L, *COLLISION_SOUND_ATTR_CUTUP, *ATTACK_REGION_SWORD);
-        // macros::ATTACK(agent, 2, 0, Hash40::new("armr"), 10.0, 361, 88, 0, 55, 3.0, -1.0, 0.0, 0.0, None, None, None, 1.0, 1.0, *ATTACK_SETOFF_KIND_OFF, *ATTACK_LR_CHECK_POS, false, 0, 0.0, 0, false, false, false, false, true, *COLLISION_SITUATION_MASK_GA, *COLLISION_CATEGORY_MASK_ALL, *COLLISION_PART_MASK_ALL, false, Hash40::new("collision_attr_cutup"), *ATTACK_SOUND_LEVEL_L, *COLLISION_SOUND_ATTR_CUTUP, *ATTACK_REGION_SWORD);
-        // macros::ATTACK(agent, 3, 0, Hash40::new("top"), 9.0, 361, 88, 0, 55, 5.2, 0.0, 11.0, -0.5, None, None, None, 1.0, 1.0, *ATTACK_SETOFF_KIND_OFF, *ATTACK_LR_CHECK_POS, false, 0, 0.0, 0, false, false, false, false, true, *COLLISION_SITUATION_MASK_GA, *COLLISION_CATEGORY_MASK_ALL, *COLLISION_PART_MASK_ALL, false, Hash40::new("collision_attr_cutup"), *ATTACK_SOUND_LEVEL_L, *COLLISION_SOUND_ATTR_CUTUP, *ATTACK_REGION_SWORD);
     }
     frame(agent.lua_state_agent, 17.0);
     if macros::is_excute(agent) {
@@ -408,7 +386,7 @@ unsafe extern "C" fn attack_hi4_eff(agent: &mut L2CAgentBase) {
     }
     frame(agent.lua_state_agent, 11.0);
     if macros::is_excute(agent) {
-        macros::EFFECT_FOLLOW(agent, Hash40::new("link_kaiten"), Hash40::new("top"), -3, 15, 0, 0, 0, 90, 0.8, true);
+        macros::EFFECT_FOLLOW(agent, Hash40::new("link_kaiten"), Hash40::new("top"), 0, 15, 0, 0, 0, 90, 0.8, true);
         macros::LAST_EFFECT_SET_RATE(agent, 2.0);
     }
     frame(agent.lua_state_agent, 16.0);
@@ -471,15 +449,13 @@ unsafe extern "C" fn attack_hi4_exp(agent: &mut L2CAgentBase) {
         ControlModule::set_rumble(agent.module_accessor, Hash40::new("rbkind_nohitll"), 0, false, *BATTLE_OBJECT_ID_INVALID as u32);
     }
 }
-////changed down-smash to spin-attack
-//motion
 //down-smash
+//changed down-smash to spin-attack
 unsafe extern "C" fn attack_lw4_game(agent: &mut L2CAgentBase) {
     frame(agent.lua_state_agent, 5.0);
     if macros::is_excute(agent) {
         WorkModule::on_flag(agent.module_accessor, *FIGHTER_STATUS_ATTACK_FLAG_START_SMASH_HOLD);
     }
-
     frame(agent.lua_state_agent, 10.0);
     if macros::is_excute(agent) {
         AttackModule::set_attack_reference_joint_id(agent.module_accessor, Hash40::new("sword1"), AttackDirectionAxis(*ATTACK_DIRECTION_Z), AttackDirectionAxis(*ATTACK_DIRECTION_X), AttackDirectionAxis(*ATTACK_DIRECTION_Y));

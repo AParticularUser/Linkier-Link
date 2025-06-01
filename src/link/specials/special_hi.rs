@@ -20,7 +20,7 @@ unsafe extern "C" fn special_hi_start_status_main(agent: &mut L2CFighterCommon) 
     agent.sub_shift_status_main(L2CValue::Ptr(special_hi_start_status_main_loop as *const () as _))
 }
 pub unsafe fn special_hi_start_status_main_loop(agent: &mut L2CFighterCommon) -> L2CValue {
-    if StatusModule::is_changing(agent.module_accessor) == false {
+    if !StatusModule::is_changing(agent.module_accessor) {
         if MotionModule::is_end(agent.module_accessor) {
             if ControlModule::check_button_on(agent.module_accessor, *CONTROL_PAD_BUTTON_SPECIAL) {
                 agent.change_status(FIGHTER_LINK_STATUS_KIND_SPECIAL_HI_HOLD.into(), false.into());
@@ -50,7 +50,8 @@ unsafe extern "C" fn special_hi_hold_status_main(agent: &mut L2CFighterCommon) -
     agent.sub_shift_status_main(L2CValue::Ptr(special_hi_hold_status_main_loop as *const () as _))
 }
 pub unsafe fn special_hi_hold_status_main_loop(agent: &mut L2CFighterCommon) -> L2CValue {
-    if ControlModule::check_button_trigger(agent.module_accessor, *CONTROL_PAD_BUTTON_JUMP) {//jump-cancel
+    //jump-cancel
+    if ControlModule::check_button_trigger(agent.module_accessor, *CONTROL_PAD_BUTTON_JUMP) {
         agent.change_status(FIGHTER_STATUS_KIND_JUMP_SQUAT.into(), true.into());
         return true.into()
     }
@@ -103,7 +104,7 @@ pub unsafe fn special_hi_end_status_main_loop(agent: &mut L2CFighterCommon) -> L
     }
     if VarModule::is_flag(agent.module_accessor, status::LINK_FLAG_SPECIAL_HI_END_ENABLE_CANCEL) {
         //attack-cancel
-        if ControlModule::check_button_trigger(agent.module_accessor, *CONTROL_PAD_BUTTON_ATTACK) {//possibly add air-dodge option
+        if ControlModule::check_button_trigger(agent.module_accessor, *CONTROL_PAD_BUTTON_ATTACK) {
             agent.change_status(FIGHTER_LINK_STATUS_KIND_SPECIAL_HI_CANCEL.into(), false.into());
             return true.into()
         }
@@ -119,10 +120,10 @@ pub unsafe fn special_hi_end_status_main_loop(agent: &mut L2CFighterCommon) -> L
         }
         //bomb drop
         if VarModule::get_int(agent.module_accessor, instance::LINK_INT_SPECIAL_HI_BOMBDROP_DISABLE_FRAME) <= 0 {
-            // let stick_y = ControlModule::get_stick_y(agent.module_accessor);
-            // let stick_y_tilt = WorkModule::get_param_float(agent.module_accessor, hash40("common"), hash40("special_stick_y"));
+            let stick_y = ControlModule::get_stick_y(agent.module_accessor);
+            let stick_y_tilt = WorkModule::get_param_float(agent.module_accessor, hash40("common"), hash40("special_stick_y"));
             if ControlModule::check_button_trigger(agent.module_accessor, *CONTROL_PAD_BUTTON_SPECIAL) 
-            // && stick_y <= stick_y_tilt 
+            && stick_y <= stick_y_tilt 
             {
                 special_hi_bomb_drop(agent);
             }
@@ -130,12 +131,10 @@ pub unsafe fn special_hi_end_status_main_loop(agent: &mut L2CFighterCommon) -> L
             VarModule::dec_int(agent.module_accessor, instance::LINK_INT_SPECIAL_HI_BOMBDROP_DISABLE_FRAME);
         }
     }
-    
     //rise
     if VarModule::is_flag(agent.module_accessor, status::LINK_FLAG_SPECIAL_HI_END_RISE) {
-        // VarModule::off_flag(agent.module_accessor, status::LINK_FLAG_SPECIAL_HI_END_RISE);
+        //start
         if VarModule::get_int(agent.module_accessor, status::LINK_INT_SPECIAL_HI_END_RISE_COUNT) <= 0 {
-            //physics stuff
             agent.set_situation(SITUATION_KIND_AIR.into());
             GroundModule::correct(agent.module_accessor, GroundCorrectKind(*GROUND_CORRECT_KIND_AIR));
             KineticModule::change_kinetic(agent.module_accessor, *FIGHTER_KINETIC_TYPE_AIR_STOP);
@@ -145,21 +144,16 @@ pub unsafe fn special_hi_end_status_main_loop(agent: &mut L2CFighterCommon) -> L
             sv_kinetic_energy!(set_speed, agent, *FIGHTER_KINETIC_ENERGY_ID_GRAVITY, 0.0);
             sv_kinetic_energy!(set_brake, agent, *FIGHTER_KINETIC_ENERGY_ID_STOP, param::LINK_FLOAT_SPECIAL_HI_RISE_BRAKE_X, 0.0);
         }else {
-            //timer
+            //end
             if VarModule::get_int(agent.module_accessor, status::LINK_INT_SPECIAL_HI_END_RISE_COUNT) >= param::LINK_INT_SPECIAL_HI_RISE_FRAME {
-                //physics stuff
-                // let lr = PostureModule::lr(agent.module_accessor);
+                VarModule::off_flag(agent.module_accessor, status::LINK_FLAG_SPECIAL_HI_END_RISE);
                 sv_kinetic_energy!(set_limit_speed, agent, *FIGHTER_KINETIC_ENERGY_ID_GRAVITY, param::LINK_FLOAT_SPECIAL_HI_FALL_STABLE_Y);
                 sv_kinetic_energy!(set_stable_speed, agent, *FIGHTER_KINETIC_ENERGY_ID_GRAVITY, param::LINK_FLOAT_SPECIAL_HI_FALL_STABLE_Y);
                 sv_kinetic_energy!(set_accel, agent, *FIGHTER_KINETIC_ENERGY_ID_GRAVITY, param::LINK_FLOAT_SPECIAL_HI_FALL_ACCEL_Y);
                 sv_kinetic_energy!(set_brake, agent, *FIGHTER_KINETIC_ENERGY_ID_GRAVITY, param::LINK_FLOAT_SPECIAL_HI_FALL_BRAKE_Y);
-            
-                // sv_kinetic_energy!(set_limit_speed, agent, *FIGHTER_KINETIC_ENERGY_ID_CONTROL, param::LINK_FLOAT_SPECIAL_HI_FALL_STABLE_X*lr, 0.0);
-                // sv_kinetic_energy!(set_stable_speed, agent, *FIGHTER_KINETIC_ENERGY_ID_CONTROL, param::LINK_FLOAT_SPECIAL_HI_FALL_STABLE_X, 0.0);
-                // sv_kinetic_energy!(set_accel, agent, *FIGHTER_KINETIC_ENERGY_ID_CONTROL, param::LINK_FLOAT_SPECIAL_HI_FALL_ACCEL_X, 0.0);
-                // sv_kinetic_energy!(set_brake, agent, *FIGHTER_KINETIC_ENERGY_ID_CONTROL, param::LINK_FLOAT_SPECIAL_HI_FALL_BRAKE_X, 0.0);
             }
         }
+        //timer
         VarModule::inc_int(agent.module_accessor, status::LINK_INT_SPECIAL_HI_END_RISE_COUNT);
     }
     false.into()
@@ -171,34 +165,25 @@ unsafe extern "C" fn special_hi_end_status_end(agent: &mut L2CFighterCommon) -> 
     false.into()
 }
 pub unsafe fn special_hi_bomb_drop(agent: &mut L2CFighterCommon) -> bool {
-    if
-    //  WorkModule::is_flag(agent.module_accessor, *FIGHTER_LINK_STATUS_WORK_ID_FLAG_BOMB_ALREADY_GENERATED) == false 
-    // && 
-    ArticleModule::is_generatable(agent.module_accessor, *FIGHTER_LINK_GENERATE_ARTICLE_LINKBOMB) {
+    if ArticleModule::is_generatable(agent.module_accessor, *FIGHTER_LINK_GENERATE_ARTICLE_LINKBOMB) {
         //spawn and drop bomb
         VarModule::set_int(agent.module_accessor, instance::LINK_INT_SPECIAL_HI_BOMBDROP_DISABLE_FRAME, param::LINK_INT_SPECIAL_HI_BOMBDROP_DISABLE);
         macros::PLAY_SE(agent, Hash40::new("se_link_special_l01"));
-
         ArticleModule::generate_article(agent.module_accessor, *FIGHTER_LINK_GENERATE_ARTICLE_LINKBOMB, false, 0);
-        // ItemModule::attach_item(agent.module_accessor, ItemKind(*ITEM_KIND_LINKBOMB), *ATTACH_ITEM_GROUP_NONE, false);
-
         let article = ArticleModule::get_article(agent.module_accessor, *FIGHTER_LINK_GENERATE_ARTICLE_LINKBOMB);
         let object_id = smash::app::lua_bind::Article::get_battle_object_id(article) as u32;
         let article_boma = sv_battle_object::module_accessor(object_id);
-
         LinkModule::link(article_boma,*WEAPON_LINK_NO_CONSTRAINT, agent.global_table[global_table::OBJECT_ID].get_u32());
         LinkModule::set_model_constraint_pos_ort(article_boma, *WEAPON_LINK_NO_CONSTRAINT, Hash40::new("have"), Hash40::new("top"), (*CONSTRAINT_FLAG_NO_FLIP|*CONSTRAINT_FLAG_ORIENTATION|*CONSTRAINT_FLAG_POSITION|*CONSTRAINT_FLAG_OFFSET_ROT|*CONSTRAINT_FLAG_OFFSET_TRANSLATE) as u32, true);
         LinkModule::unlink(article_boma,*WEAPON_LINK_NO_CONSTRAINT);
-
         let pos_x = PostureModule::pos_x(agent.module_accessor);
         let pos_y = PostureModule::pos_y(agent.module_accessor);
         PostureModule::set_pos_2d(article_boma, &Vector2f{x:pos_x, y:pos_y +param::LINK_FLOAT_SPECIAL_HI_BOMBDROP_OFFSET_Y});
-
+        //makes bomb act like it was thrown
         let team_no = TeamModule::team_no(agent.module_accessor) as i32;
         let team_owner_id = TeamModule::team_owner_id(agent.module_accessor) as u32;
         TeamModule::set_team(article_boma, team_no, true);
         TeamModule::set_team_owner_id(article_boma, team_owner_id);
-
         StatusModule::change_status_force(article_boma, *ITEM_STATUS_KIND_FALL, false);
         return true
     }
@@ -209,15 +194,12 @@ pub unsafe fn special_hi_bomb_drop(agent: &mut L2CFighterCommon) -> bool {
         if StatusModule::status_kind(article_boma) == *ITEM_STATUS_KIND_THROW 
         || StatusModule::status_kind(article_boma) == *ITEM_STATUS_KIND_FALL
         || StatusModule::status_kind(article_boma) == *ITEM_STATUS_KIND_LANDING {
-            // boom
+            //start bomb timer
             VarModule::set_int(agent.module_accessor, instance::LINK_INT_SPECIAL_HI_BOMBDROP_DISABLE_FRAME, param::LINK_INT_SPECIAL_HI_BOMBDROP_DISABLE);
-            // let blast = WorkModule::get_param_int(article_boma, hash40("param_linkbomb"), hash40("linkbomb_blast_wait_frame"));
-            WorkModule::set_int(article_boma,12,  *ITEM_INSTANCE_WORK_INT_BOMB_COUNTER);
+            WorkModule::set_int(article_boma,param::LINK_INT_SPECIAL_HI_BOMBDROP_BLAST,  *ITEM_INSTANCE_WORK_INT_BOMB_COUNTER);
             WorkModule::on_flag(article_boma,  *ITEM_LINKBOMB_INSTANCE_WORK_FLAG_IS_BLAST);
             WorkModule::off_flag(article_boma,  *ITEM_INSTANCE_WORK_FLAG_EATABLE);
             MotionModule::change_motion(article_boma, Hash40::new("flash"), 0.0, 1.0, false, 0.0, false, false);
-            
-
             return true
         }
         if ItemModule::is_have_item(agent.module_accessor, 0) {
@@ -225,7 +207,6 @@ pub unsafe fn special_hi_bomb_drop(agent: &mut L2CFighterCommon) -> bool {
                 //drop bomb if holding
                 VarModule::set_int(agent.module_accessor, instance::LINK_INT_SPECIAL_HI_BOMBDROP_DISABLE_FRAME, param::LINK_INT_SPECIAL_HI_BOMBDROP_DISABLE);
                 ItemModule::drop_item(agent.module_accessor, 0.0, 0.0, 0);
-                // ItemModule::throw_item(agent.module_accessor, 0.0, 0.0, 0.0, 0, false, 0.0);
                 let pos_x = PostureModule::pos_x(agent.module_accessor);
                 let pos_y = PostureModule::pos_y(agent.module_accessor);
                 PostureModule::set_pos_2d(article_boma, &Vector2f{x:pos_x, y:pos_y +param::LINK_FLOAT_SPECIAL_HI_BOMBDROP_OFFSET_Y});
@@ -303,7 +284,7 @@ pub unsafe fn special_hi_fall_status_main_loop(agent: &mut L2CFighterCommon) -> 
         return true.into()
     }
     //attack-cancel
-    if ControlModule::check_button_trigger(agent.module_accessor, *CONTROL_PAD_BUTTON_ATTACK) {//possibly add air-dodge option
+    if ControlModule::check_button_trigger(agent.module_accessor, *CONTROL_PAD_BUTTON_ATTACK) {
         agent.change_status(FIGHTER_LINK_STATUS_KIND_SPECIAL_HI_CANCEL.into(), false.into());
         return true.into()
     }
@@ -313,16 +294,13 @@ pub unsafe fn special_hi_fall_status_main_loop(agent: &mut L2CFighterCommon) -> 
     let stick_y_tilt = WorkModule::get_param_float(agent.module_accessor, hash40("common"), hash40("dive_cont_value"));
     let stick_y = ControlModule::get_stick_y(agent.module_accessor);
     if flick_frame >= flick_count 
-    && stick_y < stick_y_tilt {//might change to down+special instead of flick
+    && stick_y < stick_y_tilt {
         agent.change_status(FIGHTER_STATUS_KIND_FALL_SPECIAL.into(), false.into());
         return true.into()
     }
     //bomb drop
     if VarModule::get_int(agent.module_accessor, instance::LINK_INT_SPECIAL_HI_BOMBDROP_DISABLE_FRAME) <= 0 {
-        // let stick_y = ControlModule::get_stick_y(agent.module_accessor);
-        // let stick_y_tilt = WorkModule::get_param_float(agent.module_accessor, hash40("common"), hash40("special_stick_y"));
         if ControlModule::check_button_trigger(agent.module_accessor, *CONTROL_PAD_BUTTON_SPECIAL) 
-        // && stick_y <= stick_y_tilt 
         {
             special_hi_bomb_drop(agent);
         }
@@ -367,7 +345,6 @@ pub unsafe fn special_hi_fall_status_main_loop(agent: &mut L2CFighterCommon) -> 
 unsafe extern "C" fn special_hi_fall_status_end(agent: &mut L2CFighterCommon) -> L2CValue {
     ArticleModule::remove_exist(agent.module_accessor, *FIGHTER_LINK_GENERATE_ARTICLE_PARASAIL, ArticleOperationTarget(*ARTICLE_OPE_TARGET_ALL));
     macros::EFFECT_OFF_KIND(agent, Hash40::new("link_entry"), false, false);
-    // ModelModule::set_joint_translate(agent.module_accessor, Hash40::new("shieldb"), &Vector3f{x:0.01,y:0.01,z:0.01}, true, true);
     false.into()
 }
 //cancel
@@ -384,41 +361,19 @@ unsafe extern "C" fn special_hi_cancel_status_main(agent: &mut L2CFighterCommon)
 }
 pub unsafe fn special_hi_cancel_status_main_loop(agent: &mut L2CFighterCommon) -> L2CValue {
     //down-air-bounce stuff
-    // if agent.global_table[global_table::IS_STOP].get_bool() 
-    // && WorkModule::is_flag(agent.module_accessor, *FIGHTER_LINK_INSTANCE_WORK_ID_FLAG_ATTACK_AIR_LW_BOUND) {
-    //     if !WorkModule::is_flag(agent.module_accessor, *FIGHTER_LINK_INSTANCE_WORK_ID_FLAG_ATTACK_AIR_LW_CLEAR) {
-    //         WorkModule::on_flag(agent.module_accessor, *FIGHTER_LINK_INSTANCE_WORK_ID_FLAG_ATTACK_AIR_LW_CLEAR);
-    //         notify_event_msc_cmd!(agent, 0x2e03b5bcfc);
-    //     }
-    //     let blank_time = WorkModule::get_float(agent.module_accessor, *FIGHTER_LINK_INSTANCE_WORK_ID_FLOAT_ATTACK_AIR_LW2_BLANK_TIME);
-    //     if 0.0 < blank_time {
-    //         let rate = MotionModule::rate(agent.module_accessor);
-    //         WorkModule::sub_float(agent.module_accessor, rate, *FIGHTER_LINK_INSTANCE_WORK_ID_FLOAT_ATTACK_AIR_LW2_BLANK_TIME);
-    //         let hit_count = WorkModule::get_int(agent.module_accessor, *FIGHTER_LINK_INSTANCE_WORK_ID_INT_ATTACK_AIR_LW_HIT_COUNT);
-    //         let max_hit = WorkModule::get_param_int(agent.module_accessor, hash40("param_private"), hash40("air_lw_max_hit"));
-    //         // let new_blank_time = WorkModule::get_float(agent.module_accessor, *FIGHTER_LINK_INSTANCE_WORK_ID_FLOAT_ATTACK_AIR_LW2_BLANK_TIME);
-    //         let new_blank_time = blank_time-rate;
-    //         if WorkModule::is_flag(agent.module_accessor, *FIGHTER_LINK_INSTANCE_WORK_ID_FLAG_ATTACK_AIR_LW_SET_ATTACK) 
-    //         && hit_count <= max_hit 
-    //         && new_blank_time > 0.0 {
-    //             AttackModule::clear_all(agent.module_accessor);
-    //             notify_event_msc_cmd!(agent, 0x2fd16f3e74);
-    //         }
-    //     }
-    // }
-
     let hit_count = WorkModule::get_int(agent.module_accessor, *FIGHTER_LINK_INSTANCE_WORK_ID_INT_ATTACK_AIR_LW_HIT_COUNT);
     let max_hit = WorkModule::get_param_int(agent.module_accessor, hash40("param_private"), hash40("air_lw_max_hit"));
     if WorkModule::is_flag(agent.module_accessor, *FIGHTER_LINK_INSTANCE_WORK_ID_FLAG_ATTACK_AIR_LW_SET_ATTACK) 
     && hit_count <= max_hit {
         let blank_time = WorkModule::get_float(agent.module_accessor, *FIGHTER_LINK_INSTANCE_WORK_ID_FLOAT_ATTACK_AIR_LW2_BLANK_TIME);
         if blank_time <= 0.0 {
-            if AttackModule::is_infliction(agent.module_accessor, *COLLISION_KIND_MASK_HIT) {
+            if AttackModule::is_infliction(agent.module_accessor, *COLLISION_KIND_MASK_HIT) 
+            || AttackModule::is_infliction(agent.module_accessor, *COLLISION_KIND_MASK_SHIELD) {
                 let max_blank_time = WorkModule::get_param_float(agent.module_accessor, hash40("param_private"), hash40("air_lw_blank_time"));
                 WorkModule::set_float(agent.module_accessor, max_blank_time, *FIGHTER_LINK_INSTANCE_WORK_ID_FLOAT_ATTACK_AIR_LW2_BLANK_TIME);
                 WorkModule::inc_int(agent.module_accessor, *FIGHTER_LINK_INSTANCE_WORK_ID_INT_ATTACK_AIR_LW_HIT_COUNT);
                 //call twice to match normal down-air-bounce hight
-                if KineticModule::get_sum_speed_x(agent.module_accessor, *KINETIC_ENERGY_RESERVE_ATTRIBUTE_MAIN) < 0.0 {
+                if KineticModule::get_sum_speed_y(agent.module_accessor, *KINETIC_ENERGY_RESERVE_ATTRIBUTE_ALL) < 0.0 {
                     MotionAnimcmdModule::call_script_single(agent.module_accessor, *FIGHTER_ANIMCMD_GAME, Hash40::new("game_attackairlw2bound"), -1);
                 }
                 MotionAnimcmdModule::call_script_single(agent.module_accessor, *FIGHTER_ANIMCMD_GAME, Hash40::new("game_attackairlw2bound"), -1);
@@ -434,7 +389,6 @@ pub unsafe fn special_hi_cancel_status_main_loop(agent: &mut L2CFighterCommon) -
             }
         } 
     }
-
     if MotionModule::is_end(agent.module_accessor) {
         agent.change_status(FIGHTER_STATUS_KIND_FALL_SPECIAL.into(), false.into());
         return true.into()
@@ -501,7 +455,6 @@ pub unsafe fn special_hi_2_status_main_loop(agent: &mut L2CFighterCommon) -> L2C
         return true.into()
     }
     //flick stick down to end up-special-2 early
-    //might change to down+special instead of flick
     let flick_frame = WorkModule::get_param_int(agent.module_accessor, hash40("common"), hash40("dive_flick_frame_value"));
     let flick_count = ControlModule::get_flick_no_reset_y(agent.module_accessor);
     let stick_y_tilt = WorkModule::get_param_float(agent.module_accessor, hash40("common"), hash40("dive_cont_value"));
@@ -513,23 +466,22 @@ pub unsafe fn special_hi_2_status_main_loop(agent: &mut L2CFighterCommon) -> L2C
     }
     //brake
     if VarModule::is_flag(agent.module_accessor, status::LINK_FLAG_SPECIAL_HI_2_BRAKE) {
-        // VarModule::off_flag(agent.module_accessor, status::LINK_FLAG_SPECIAL_HI_2_BRAKE);
+        //start
         if VarModule::get_int(agent.module_accessor, status::LINK_INT_SPECIAL_HI_2_BRAKE_COUNT) <= 0 {
-            //physics stuff
             let lr = PostureModule::lr(agent.module_accessor);
             sv_kinetic_energy!(set_limit_speed, agent, *FIGHTER_KINETIC_ENERGY_ID_GRAVITY, param::LINK_FLOAT_SPECIAL_HI_FALL_STABLE_Y);
             sv_kinetic_energy!(set_stable_speed, agent, *FIGHTER_KINETIC_ENERGY_ID_GRAVITY, param::LINK_FLOAT_SPECIAL_HI_FALL_STABLE_Y);
             sv_kinetic_energy!(set_accel, agent, *FIGHTER_KINETIC_ENERGY_ID_GRAVITY, param::LINK_FLOAT_SPECIAL_HI_FALL_ACCEL_Y);
             sv_kinetic_energy!(set_brake, agent, *FIGHTER_KINETIC_ENERGY_ID_GRAVITY, param::LINK_FLOAT_SPECIAL_HI_FALL_BRAKE_Y);
-        
             sv_kinetic_energy!(set_limit_speed, agent, *FIGHTER_KINETIC_ENERGY_ID_CONTROL, param::LINK_FLOAT_SPECIAL_HI_FALL_STABLE_X*lr, 0.0);
             sv_kinetic_energy!(set_stable_speed, agent, *FIGHTER_KINETIC_ENERGY_ID_CONTROL, param::LINK_FLOAT_SPECIAL_HI_FALL_STABLE_X, 0.0);
-            // sv_kinetic_energy!(set_brake, agent, *FIGHTER_KINETIC_ENERGY_ID_CONTROL, param::LINK_FLOAT_SPECIAL_HI_FALL_BRAKE_X, 0.0);
-        //timer
+        //end
         }else if VarModule::get_int(agent.module_accessor, status::LINK_INT_SPECIAL_HI_2_BRAKE_COUNT) >= param::LINK_INT_SPECIAL_HI_BRAKE_FRAME {
+            VarModule::off_flag(agent.module_accessor, status::LINK_FLAG_SPECIAL_HI_2_BRAKE);
             agent.change_status(FIGHTER_STATUS_KIND_FALL_SPECIAL.into(), false.into());
             return true.into()
         }
+        //timer
         VarModule::inc_int(agent.module_accessor, status::LINK_INT_SPECIAL_HI_2_BRAKE_COUNT);
     }
     false.into()
@@ -634,7 +586,6 @@ unsafe extern "C" fn special_hi_hold_snd(agent: &mut L2CAgentBase) {
     if macros::is_excute(agent) {
         let sound = SoundModule::play_status_se(agent.module_accessor, Hash40::new("se_common_spirits_wind_loop"), true, false, false);
         SoundModule::set_se_vol(agent.module_accessor, sound as i32, 0.25, 0);
-        // macros::PLAY_STATUS(agent, Hash40::new("se_common_spirits_wind_loop"));
     }
 }
 unsafe extern "C" fn special_hi_hold_exp(agent: &mut L2CAgentBase) {
@@ -652,7 +603,6 @@ unsafe extern "C" fn special_hi_end_game(agent: &mut L2CAgentBase) {
     if macros::is_excute(agent) {
         ArticleModule::generate_article(agent.module_accessor, *FIGHTER_LINK_GENERATE_ARTICLE_PARASAIL, false, -1);
         ArticleModule::change_motion(agent.module_accessor, *FIGHTER_LINK_GENERATE_ARTICLE_PARASAIL, Hash40::new("special_hi"), false, 1.0);
-        
         let article = ArticleModule::get_article(agent.module_accessor, *FIGHTER_LINK_GENERATE_ARTICLE_PARASAIL);
         let object_id = smash::app::lua_bind::Article::get_battle_object_id(article) as u32;
         let article_boma = sv_battle_object::module_accessor(object_id);
@@ -756,7 +706,6 @@ unsafe extern "C" fn special_air_hi_end_game(agent: &mut L2CAgentBase) {
     if macros::is_excute(agent) {
         ArticleModule::generate_article(agent.module_accessor, *FIGHTER_LINK_GENERATE_ARTICLE_PARASAIL, false, -1);
         ArticleModule::change_motion(agent.module_accessor, *FIGHTER_LINK_GENERATE_ARTICLE_PARASAIL, Hash40::new("special_hi"), false, 1.0);
-        
         let article = ArticleModule::get_article(agent.module_accessor, *FIGHTER_LINK_GENERATE_ARTICLE_PARASAIL);
         let object_id = smash::app::lua_bind::Article::get_battle_object_id(article) as u32;
         let article_boma = sv_battle_object::module_accessor(object_id);
@@ -867,16 +816,12 @@ unsafe extern "C" fn special_hi_fall_game(agent: &mut L2CAgentBase) {
         notify_event_msc_cmd!(agent, 0x2127e37c07u64, *GROUND_CLIFF_CHECK_KIND_ALWAYS_BOTH_SIDES);
     }
 }
-unsafe extern "C" fn special_hi_fall_eff(agent: &mut L2CAgentBase) {
-    if macros::is_excute(agent) {
-    }
-}
+// unsafe extern "C" fn special_hi_fall_eff(agent: &mut L2CAgentBase) {}
 unsafe extern "C" fn special_hi_fall_snd(agent: &mut L2CAgentBase) {
     loop {
         if macros::is_excute(agent) {
             let sound = SoundModule::play_status_se(agent.module_accessor, Hash40::new("se_link_appear01"), true, false, false);
             SoundModule::set_se_vol(agent.module_accessor, sound as i32, 1.2, 0);
-            // macros::PLAY_STATUS(agent, Hash40::new("se_link_appear01"));
         }
         wait(agent.lua_state_agent, 35.0);
     }
@@ -900,7 +845,6 @@ unsafe extern "C" fn special_hi_2_game(agent: &mut L2CAgentBase) {
     if macros::is_excute(agent) {
         ArticleModule::generate_article(agent.module_accessor, *FIGHTER_LINK_GENERATE_ARTICLE_PARASAIL, false, -1);
         ArticleModule::change_motion(agent.module_accessor, *FIGHTER_LINK_GENERATE_ARTICLE_PARASAIL, Hash40::new("special_hi"), false, 1.0);
-        
         let article = ArticleModule::get_article(agent.module_accessor, *FIGHTER_LINK_GENERATE_ARTICLE_PARASAIL);
         let object_id = smash::app::lua_bind::Article::get_battle_object_id(article) as u32;
         let article_boma = sv_battle_object::module_accessor(object_id);
@@ -928,7 +872,6 @@ unsafe extern "C" fn special_hi_2_snd(agent: &mut L2CAgentBase) {
     if macros::is_excute(agent) {
         let sound = SoundModule::play_status_se(agent.module_accessor, Hash40::new("se_link_appear01"), true, false, false);
         SoundModule::set_se_vol(agent.module_accessor, sound as i32, 1.2, 0);
-        // macros::PLAY_STATUS(agent, Hash40::new("se_link_appear01"));
     }
 }
 unsafe extern "C" fn special_hi_2_exp(agent: &mut L2CAgentBase) {
@@ -1011,12 +954,12 @@ pub fn install(agent: &mut smashline::Agent) {
     agent.expression_acmd("expression_specialairhishield", special_air_hi_end_exp, Priority::High);
     //fall
     agent.game_acmd("game_specialairhifall", special_hi_fall_game, Priority::High);
-    agent.effect_acmd("effect_specialairhifall", special_hi_fall_eff, Priority::High);
+    // agent.effect_acmd("effect_specialairhifall", special_hi_fall_eff, Priority::High);
     agent.sound_acmd("sound_specialairhifall", special_hi_fall_snd, Priority::High);
     agent.expression_acmd("expression_specialairhifall", special_hi_fall_exp, Priority::High);
     //fall-shield
     agent.game_acmd("game_specialairhishieldfall", special_hi_fall_game, Priority::High);
-    agent.effect_acmd("effect_specialairhishieldfall", special_hi_fall_eff, Priority::High);
+    // agent.effect_acmd("effect_specialairhishieldfall", special_hi_fall_eff, Priority::High);
     agent.sound_acmd("sound_specialairhishieldfall", special_hi_fall_snd, Priority::High);
     agent.expression_acmd("expression_specialairhishieldfall", special_hi_fall_exp, Priority::High);
     //2nd

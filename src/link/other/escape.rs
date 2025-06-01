@@ -9,6 +9,7 @@ use crate::link::consts::{
 
 ////status
 //air-dodge
+//fixing shield visibility not switching when grabbing an item
 unsafe extern "C" fn escape_air_status_init(agent: &mut L2CFighterCommon) -> L2CValue {
     if ItemModule::is_have_item(agent.module_accessor, 0) {
         VarModule::on_flag(agent.module_accessor, status::LINK_FLAG_HAS_ITEM_ANIM);

@@ -42,6 +42,7 @@ unsafe extern "C" fn shield_surf_start_status_main(agent: &mut L2CFighterCommon)
     }else {
         MotionModule::change_motion(agent.module_accessor, Hash40::new("shield_surf_air_start"), 0.0, 1.0, false, 0.0, false, false);
     }
+    //kinetic stuff
     GroundModule::correct(agent.module_accessor, GroundCorrectKind(*GROUND_CORRECT_KIND_AIR));
     KineticModule::change_kinetic(agent.module_accessor, *FIGHTER_KINETIC_TYPE_AIR_STOP);
     KineticModule::enable_energy(agent.module_accessor, *FIGHTER_KINETIC_ENERGY_ID_STOP);
@@ -115,22 +116,22 @@ unsafe extern "C" fn shield_surf_loop_status_main(agent: &mut L2CFighterCommon) 
         MotionModule::add_motion_2nd(agent.module_accessor, Hash40::new("shield_surf_break"), 0.0, 1.0, false, 0.0);
         MotionModule::set_weight(agent.module_accessor, 1.0, false);
         macros::PLAY_STATUS(agent, Hash40::new("se_link_special_h03"));
-
+        //kinetic stuff
         GroundModule::correct(agent.module_accessor, GroundCorrectKind(*GROUND_CORRECT_KIND_GROUND));
         KineticModule::change_kinetic(agent.module_accessor, *FIGHTER_KINETIC_TYPE_GROUND_STOP);
         sv_kinetic_energy!(set_brake, agent, *FIGHTER_KINETIC_ENERGY_ID_STOP, 0.0, 0.0);
     }else {
         MotionModule::change_motion(agent.module_accessor, Hash40::new("shield_surf_air_loop"), 0.0, 1.0, false, 0.0, false, false);
-    
+        //kinetic stuff
         GroundModule::correct(agent.module_accessor, GroundCorrectKind(*GROUND_CORRECT_KIND_AIR));
         KineticModule::change_kinetic(agent.module_accessor, *FIGHTER_KINETIC_TYPE_AIR_STOP);
         sv_kinetic_energy!(set_brake, agent, *FIGHTER_KINETIC_ENERGY_ID_STOP, param::LINK_FLOAT_SHIELD_SURF_LOOP_BRAKE_AIR, 0.0);
     }
+    //kinetic stuff
     KineticModule::enable_energy(agent.module_accessor, *FIGHTER_KINETIC_ENERGY_ID_STOP);
     sv_kinetic_energy!(set_limit_speed, agent, *FIGHTER_KINETIC_ENERGY_ID_STOP, param::LINK_FLOAT_SHIELD_SURF_LOOP_SPEED_STABLE_MAX*2.0, 0.0);
     sv_kinetic_energy!(set_stable_speed, agent, *FIGHTER_KINETIC_ENERGY_ID_STOP, 0.0, 0.0);
     sv_kinetic_energy!(set_accel, agent, *FIGHTER_KINETIC_ENERGY_ID_STOP, 0.0, 0.0);
-
     VarModule::set_float(agent.module_accessor, status::LINK_FLOAT_SHIELD_SURF_LOOP_SLOPE, 0.0);
     agent.sub_shift_status_main(L2CValue::Ptr(shield_surf_loop_status_main_loop as *const () as _))
 }
@@ -302,13 +303,13 @@ unsafe extern "C" fn shield_surf_attack_status_main(agent: &mut L2CFighterCommon
     }else {
         MotionModule::change_motion(agent.module_accessor, Hash40::new("shield_surf_air_attack"), 0.0, 1.0, false, 0.0, false, false);
     }
+    //kinetic stuff
     GroundModule::correct(agent.module_accessor, GroundCorrectKind(*GROUND_CORRECT_KIND_AIR));
     KineticModule::change_kinetic(agent.module_accessor, *FIGHTER_KINETIC_TYPE_AIR_STOP);
     KineticModule::enable_energy(agent.module_accessor, *FIGHTER_KINETIC_ENERGY_ID_STOP);
     sv_kinetic_energy!(set_limit_speed, agent, *FIGHTER_KINETIC_ENERGY_ID_STOP, param::LINK_FLOAT_SHIELD_SURF_LOOP_SPEED_STABLE_MAX, 0.0);
     sv_kinetic_energy!(set_stable_speed, agent, *FIGHTER_KINETIC_ENERGY_ID_STOP, 0.0, 0.0);
     sv_kinetic_energy!(set_brake, agent, *FIGHTER_KINETIC_ENERGY_ID_STOP, param::LINK_FLOAT_SHIELD_SURF_LOOP_BRAKE_AIR, 0.0);
-
     agent.sub_shift_status_main(L2CValue::Ptr(shield_surf_attack_status_main_loop as *const () as _))
 }
 pub unsafe fn shield_surf_attack_status_main_loop(agent: &mut L2CFighterCommon) -> L2CValue {
@@ -364,6 +365,7 @@ unsafe extern "C" fn shield_surf_jump_status_pre(agent: &mut L2CFighterCommon) -
 }
 unsafe extern "C" fn shield_surf_jump_status_main(agent: &mut L2CFighterCommon) -> L2CValue {
     MotionModule::change_motion(agent.module_accessor, Hash40::new("shield_surf_jump"), 0.0, 1.0, false, 0.0, false, false);
+    //kinetic stuff
     GroundModule::correct(agent.module_accessor, GroundCorrectKind(*GROUND_CORRECT_KIND_AIR));
     KineticModule::change_kinetic(agent.module_accessor, *FIGHTER_KINETIC_TYPE_AIR_STOP);
     KineticModule::enable_energy(agent.module_accessor, *FIGHTER_KINETIC_ENERGY_ID_STOP);

@@ -1,8 +1,5 @@
 use crate::imports::*;
-use crate::common::{
-    // consts::*,
-    funcs::*
-};
+use crate::common::funcs::*;
 use crate::link::consts::{
     status_kind_ex::*,
     vars::*,
@@ -10,6 +7,7 @@ use crate::link::consts::{
 };
 
 
+//change motion depending on aerial used out of up-special
 unsafe extern "C" fn landing_fall_special_status_init(agent: &mut L2CFighterCommon) -> L2CValue {
     let air_motion = MotionModule::motion_kind(agent.module_accessor);
     WorkModule::set_int64(agent.module_accessor, air_motion as i64, *FIGHTER_STATUS_ATTACK_AIR_WORK_INT_MOTION_KIND);
@@ -38,6 +36,7 @@ unsafe extern "C" fn landing_fall_special_status_main(agent: &mut L2CFighterComm
     }
     false.into()
 }
+//sudo hit-grab for ending-blow
 unsafe extern "C" fn landing_fall_special_check_attack(agent: &mut L2CFighterCommon, _param_2: &L2CValue, param_3: &L2CValue) -> L2CValue {
     let table = param_3.get_table() as *mut smash_rs::lib::L2CTable;
     let category = get_table_value(table, "object_category_").try_integer().unwrap() as i32;

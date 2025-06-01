@@ -15,24 +15,32 @@ pub mod status_kind_ex {
 }
 pub mod param {
     pub const LINK_FLOAT_FINISHING_BLOW_DAMAGE_MIN : f32 = 100.0;
+    pub const LINK_INT_FINISHING_BLOW_KNOCKOUT_FRAME : i32 = 30;
+    
+    pub const LINK_FLOAT_ATTACK_S4_SPEED_X : f32 = 1.2;
+    pub const LINK_FLOAT_ATTACK_S4_SPEED_Y : f32 = 1.7;
+    pub const LINK_FLOAT_ATTACK_S4_BRAKE_X : f32 = 0.023;
+    pub const LINK_FLOAT_ATTACK_S4_LIMIT_Y : f32 = -4.0;
+    pub const LINK_FLOAT_ATTACK_S4_ACCEL_Y : f32 = -0.15;
+    pub const LINK_FLOAT_ATTACK_S4_ACCEL_MUL : f32 = 2.0;
+
     pub const LINK_INT_SPECIAL_HI_RISE_FRAME : i32 = 14;
     pub const LINK_FLOAT_SPECIAL_HI_RISE_BRAKE_X : f32 = 0.05;
-    // pub const LINK_FLOAT_SPECIAL_HI_RISE_SPEED_Y : f32 = 0.0;
     pub const LINK_FLOAT_SPECIAL_HI_RISE_ACCEL_Y : f32 = 0.36;
     pub const LINK_FLOAT_SPECIAL_HI_RISE_STABLE_Y : f32 = 3.0;
-
-    pub const LINK_INT_SPECIAL_HI_BRAKE_FRAME : i32 = 45;
-    pub const LINK_FLOAT_SPECIAL_HI_FALL_STABLE_X : f32 = 1.0;
-    pub const LINK_FLOAT_SPECIAL_HI_FALL_ACCEL_X : f32 = 0.009;
-    // pub const LINK_FLOAT_SPECIAL_HI_FALL_BRAKE_X : f32 = 0.013;
-    pub const LINK_FLOAT_SPECIAL_HI_FALL_STABLE_Y : f32 = 0.3;
-    pub const LINK_FLOAT_SPECIAL_HI_FALL_ACCEL_Y : f32 = -0.07;
-    pub const LINK_FLOAT_SPECIAL_HI_FALL_BRAKE_Y : f32 = 1.0;
 
     pub const LINK_INT_SPECIAL_HI_CANCEL_FORGIVENESS : i32 = 4;
     pub const LINK_INT_SPECIAL_HI_BOMBDROP_DISABLE : i32 = 14;
     pub const LINK_FLOAT_SPECIAL_HI_BOMBDROP_OFFSET_Y : f32 = -4.0;
-    
+    pub const LINK_INT_SPECIAL_HI_BOMBDROP_BLAST : i32 = 12;
+
+    pub const LINK_INT_SPECIAL_HI_BRAKE_FRAME : i32 = 45;
+    pub const LINK_FLOAT_SPECIAL_HI_FALL_STABLE_X : f32 = 1.0;
+    pub const LINK_FLOAT_SPECIAL_HI_FALL_ACCEL_X : f32 = 0.009;
+    pub const LINK_FLOAT_SPECIAL_HI_FALL_STABLE_Y : f32 = 0.3;
+    pub const LINK_FLOAT_SPECIAL_HI_FALL_ACCEL_Y : f32 = -0.07;
+    pub const LINK_FLOAT_SPECIAL_HI_FALL_BRAKE_Y : f32 = 1.0;
+
     pub const LINK_INT_SHIELD_SURF_FORGIVENESS:i32 = 2;
 
     pub const LINK_FLOAT_SHIELD_SURF_START_X:f32 = 1.5;
@@ -40,13 +48,11 @@ pub mod param {
 
     pub const LINK_FLOAT_SHIELD_SURF_LOOP_BRAKE_AIR:f32 = 0.009;
     pub const LINK_FLOAT_SHIELD_SURF_LOOP_SLOPE_MAX:f32 = 50.0;
-
     pub const LINK_FLOAT_SHIELD_SURF_LOOP_SPEED_STABLE_MAX:f32 = 3.5;
     pub const LINK_FLOAT_SHIELD_SURF_LOOP_ACCEL_MIN:f32 = 0.003;
     pub const LINK_FLOAT_SHIELD_SURF_LOOP_ACCEL_MAX:f32 = 0.03;
     pub const LINK_FLOAT_SHIELD_SURF_LOOP_BRAKE_GROUND_MIN:f32 = 0.009;
     pub const LINK_FLOAT_SHIELD_SURF_LOOP_BRAKE_GROUND_MAX:f32 = 0.06;
-
     pub const LINK_FLOAT_SHIELD_SURF_JUMP_Y:f32 = 1.3;
 }
 pub mod vars {
@@ -64,15 +70,14 @@ pub mod vars {
         //flag
         pub const LINK_FLAG_HAS_ITEM_ANIM : i32 = 0x1100;
         pub const LINK_FLAG_ATTACK_IS_BUFFERD : i32 = 0x1101;
-        pub const LINK_FLAG_FINISHING_BLOW_1V1 : i32 = 0x1102;
-        pub const LINK_FLAG_FINISHING_BLOW_THROW : i32 = 0x1103;
-        pub const LINK_FLAG_ATTACK_S4_JUMP : i32 = 0x1104;
-        pub const LINK_FLAG_SPECIAL_HI_END_RISE : i32 = 0x1105;
-        pub const LINK_FLAG_SPECIAL_HI_END_ENABLE_CANCEL : i32 = 0x1106;
-        pub const LINK_FLAG_SPECIAL_HI_2_BRAKE : i32 = 0x1107;
-        pub const LINK_FLAG_APPEAL_ENABLE_MORTAL_DRAW : i32 = 0x1108;
-        pub const LINK_FLAG_APPEAL_ENABLE_SKYWARD_CHARGE : i32 = 0x1109;
-        pub const LINK_FLAG_SHIELD_SURF_HOP : i32 = 0x110a;
+        pub const LINK_FLAG_FINISHING_BLOW_THROW : i32 = 0x1102;
+        pub const LINK_FLAG_ATTACK_S4_JUMP : i32 = 0x1103;
+        pub const LINK_FLAG_SPECIAL_HI_END_RISE : i32 = 0x1104;
+        pub const LINK_FLAG_SPECIAL_HI_END_ENABLE_CANCEL : i32 = 0x1105;
+        pub const LINK_FLAG_SPECIAL_HI_2_BRAKE : i32 = 0x1106;
+        pub const LINK_FLAG_APPEAL_ENABLE_MORTAL_DRAW : i32 = 0x1107;
+        pub const LINK_FLAG_APPEAL_ENABLE_SKYWARD_CHARGE : i32 = 0x1108;
+        pub const LINK_FLAG_SHIELD_SURF_HOP : i32 = 0x1109;
         //int
         pub const LINK_INT_SPECIAL_HI_END_RISE_COUNT : i32 = 0x1100;
         pub const LINK_INT_SPECIAL_HI_2_BRAKE_COUNT : i32 = 0x1101;

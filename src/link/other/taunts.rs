@@ -7,13 +7,12 @@ use crate::link::{
     consts::{
         status_kind_ex::*,
         vars::*
-    }//,
-    // funcs::*
+    }
 };
 
 
 ////status
-//taunt: added mortal-draw and skyward-charge
+//added mortal-draw and skyward-charge
 unsafe extern "C" fn appeal_status_main(agent: &mut L2CFighterCommon) -> L2CValue { 
     VarModule::off_flag(agent.module_accessor, status::LINK_FLAG_APPEAL_ENABLE_MORTAL_DRAW);
     VarModule::off_flag(agent.module_accessor, status::LINK_FLAG_APPEAL_ENABLE_SKYWARD_CHARGE);
@@ -378,7 +377,7 @@ unsafe extern "C" fn mortal_draw_exp(agent: &mut L2CAgentBase) {
         }
     }
 }
-//side-taunt: fixed item/shield toggling
+//side-taunt
 unsafe extern "C" fn appeal_s_exp(agent: &mut L2CAgentBase) {
     if macros::is_excute(agent) {
         ItemModule::set_have_item_visibility(agent.module_accessor, false, 0);
@@ -391,9 +390,9 @@ unsafe extern "C" fn appeal_s_exp(agent: &mut L2CAgentBase) {
     }
     frame(agent.lua_state_agent, 71.0);
     if macros::is_excute(agent) {
-        if ItemModule::is_have_item(agent.module_accessor, 0) {
-            ItemModule::set_have_item_visibility(agent.module_accessor, true, 0);
-        }else {
+        ItemModule::set_have_item_visibility(agent.module_accessor, true, 0);
+        //fixing shield visibility not switching when grabbing an item
+        if !ItemModule::is_have_item(agent.module_accessor, 0) {
             VisibilityModule::set_int64(agent.module_accessor, hash40("shield") as i64, hash40("shield_normal") as i64);
         }
     }
@@ -412,7 +411,6 @@ unsafe extern "C" fn appeal_s_exp(agent: &mut L2CAgentBase) {
 }
 //down-taunt
 unsafe extern "C" fn appeal_lw_game(agent: &mut L2CAgentBase) {
-    // frame(agent.lua_state_agent, 0.0);
     macros::FT_MOTION_RATE(agent, 0.5);
     frame(agent.lua_state_agent, 23.0);
     macros::FT_MOTION_RATE(agent, 1.0);

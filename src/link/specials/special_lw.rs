@@ -3,7 +3,7 @@ use crate::common::consts::*;
 use crate::link::funcs::*;
 
 
-//status
+////status
 unsafe extern "C" fn item_throw_status_main(agent: &mut L2CFighterCommon) -> L2CValue {
     //is down-special input
     let is_special_lw_input;
@@ -13,21 +13,10 @@ unsafe extern "C" fn item_throw_status_main(agent: &mut L2CFighterCommon) -> L2C
     let special_stick_y = WorkModule::get_param_float(agent.module_accessor, hash40("common"), hash40("special_stick_y"));
     let squat_stick_y = WorkModule::get_param_float(agent.module_accessor, hash40("common"), hash40("squat_stick_y"));
     let special_button = ControlModule::check_button_trigger(agent.module_accessor, *CONTROL_PAD_BUTTON_SPECIAL);
-    // let special_n = agent.global_table[global_table::CMD_CAT1].get_i32() & (*FIGHTER_PAD_CMD_CAT1_FLAG_SPECIAL_LW) != 0;
     let special_s = agent.global_table[global_table::CMD_CAT1].get_i32() & (*FIGHTER_PAD_CMD_CAT1_FLAG_SPECIAL_S) != 0;
     let special_lw = agent.global_table[global_table::CMD_CAT1].get_i32() & (*FIGHTER_PAD_CMD_CAT1_FLAG_SPECIAL_LW) != 0;
     let item_throw = agent.global_table[global_table::CMD_CAT3].get_i32() & (*FIGHTER_PAD_CMD_CAT3_FLAG_ITEM_LIGHT_THROW_ALL|*FIGHTER_PAD_CMD_CAT3_FLAG_ITEM_LIGHT_THROW_AIR_ALL) != 0;
     let is_squat = agent.global_table[global_table::STATUS_KIND].get_i32() == *FIGHTER_STATUS_KIND_SQUAT_WAIT;
-    // println!("stick_x: {}", stick_x);
-    // println!("stick_y: {}", stick_y);
-    // println!("special_stick_x: {}", special_stick_x);
-    // println!("special_stick_y: {}", special_stick_y);
-    // println!("squat_stick_y: {}", squat_stick_y);
-    // println!("BUTTON_SPECIAL: {}", special_button);
-    // // println!("special_n: {}", special_n);
-    // println!("special_s: {}", special_s);
-    // println!("special_lw: {}", special_lw);
-    // println!("is_squat: {}", is_squat);
     if (
         !special_s 
         && special_lw
@@ -77,9 +66,9 @@ unsafe extern "C" fn item_throw_status_end(agent: &mut L2CFighterCommon) -> L2CV
     }
     0.into()
 }
-//motion
+////motion
+//throw
 unsafe extern "C" fn special_lw_throw_game(agent: &mut L2CAgentBase) {
-    // frame(agent.lua_state_agent, 0.0);
     macros::FT_MOTION_RATE(agent, 0.4);
     frame(agent.lua_state_agent, 27.0);
     if macros::is_excute(agent) {
@@ -114,13 +103,32 @@ unsafe extern "C" fn special_lw_throw_exp(agent: &mut L2CAgentBase) {
         VisibilityModule::set_int64(agent.module_accessor, hash40("shield") as i64, hash40("shield_normal") as i64);
     }
 }
-
+//blast
+unsafe extern "C" fn special_lw_blast_exp(agent: &mut L2CAgentBase) {
+    if macros::is_excute(agent) {
+        ItemModule::set_have_item_visibility(agent.module_accessor, false, 0);
+        slope!(agent, *MA_MSC_CMD_SLOPE_SLOPE, *SLOPE_STATUS_LR);
+        VisibilityModule::set_int64(agent.module_accessor, hash40("shield") as i64, hash40("shield_back") as i64);
+    }
+    frame(agent.lua_state_agent, 9.0);
+    if macros::is_excute(agent) {
+        ControlModule::set_rumble(agent.module_accessor, Hash40::new("rbkind_nohits"), 5, false, *BATTLE_OBJECT_ID_INVALID as u32);
+    }
+    frame(agent.lua_state_agent, 34.0);
+    if macros::is_excute(agent) {
+        //fixing shield visibility not switching when grabbing an item
+        if !ItemModule::is_have_item(agent.module_accessor, 0) {
+            VisibilityModule::set_int64(agent.module_accessor, hash40("shield") as i64, hash40("shield_normal") as i64);
+        }
+    }
+}
 
 pub fn install(agent: &mut smashline::Agent) {
     ////status
     agent.status(Main, *FIGHTER_STATUS_KIND_ITEM_THROW, item_throw_status_main);
     agent.status(End, *FIGHTER_STATUS_KIND_ITEM_THROW, item_throw_status_end);
-    //motion
+    ////motion
+    //throw
     agent.game_acmd("game_speciallwthrow", special_lw_throw_game, Priority::High);
     // agent.effect_acmd("effect_speciallwthrow", special_lw_throw_eff, Priority::High);
     // agent.sound_acmd("sound_speciallwthrow", special_lw_throw_snd, Priority::High);
@@ -129,4 +137,7 @@ pub fn install(agent: &mut smashline::Agent) {
     // agent.effect_acmd("effect_specialairlwthrow", special_lw_throw_eff, Priority::High);
     // agent.sound_acmd("sound_specialairlwthrow", special_lw_throw_snd, Priority::High);
     agent.expression_acmd("expression_specialairlwthrow", special_lw_throw_exp, Priority::High);
+    //blast
+    agent.expression_acmd("expression_speciallwblast", special_lw_blast_exp, Priority::High);
+    agent.expression_acmd("expression_specialairlwblast", special_lw_blast_exp, Priority::High);
 }
