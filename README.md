@@ -1,6 +1,7 @@
 
-![linkier_link](https://github.com/user-attachments/assets/15e8e877-a3ab-43b8-ad1b-f2b03a78e9ee)
-Download: https://github.com/AParticularUser/Linkier-Link/releases
+![linkier_link_v1 0 0](https://github.com/user-attachments/assets/41c3c746-87d5-4129-a044-0a922bf77028)
+
+#### Download: https://github.com/AParticularUser/Linkier-Link/releases
 --------------------------------------------------------------------------
 # Linkier Link.
 Reworked Link's moveset to have more referances from The Legend of Zelda games.
