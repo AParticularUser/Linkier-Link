@@ -72,17 +72,17 @@ unsafe extern "C" fn special_hi_end_status_main(agent: &mut L2CFighterCommon) ->
         KineticModule::change_kinetic(agent.module_accessor, *FIGHTER_KINETIC_TYPE_GROUND_STOP);
     }else {
         //note: need to fix shieldb bone desyncing for certain animations
-        // let status_prev = agent.global_table[global_table::PREV_STATUS_KIND].get_i32();
-        // if status_prev == FIGHTER_LINK_STATUS_KIND_SHIELD_SURF_START
-        // || status_prev == FIGHTER_LINK_STATUS_KIND_SHIELD_SURF_LOOP
-        // || status_prev == FIGHTER_LINK_STATUS_KIND_SHIELD_SURF_JUMP
-        // || status_prev == FIGHTER_LINK_STATUS_KIND_SHIELD_SURF_ATTACK
-        // // || status_prev == FIGHTER_LINK_STATUS_KIND_SHIELD_SURF_END 
-        // {
-        //     motion = "special_air_hi_shield";
-        // }else {
+        let status_prev = agent.global_table[global_table::PREV_STATUS_KIND].get_i32();
+        if status_prev == FIGHTER_LINK_STATUS_KIND_SHIELD_SURF_START
+        || status_prev == FIGHTER_LINK_STATUS_KIND_SHIELD_SURF_LOOP
+        || status_prev == FIGHTER_LINK_STATUS_KIND_SHIELD_SURF_JUMP
+        || status_prev == FIGHTER_LINK_STATUS_KIND_SHIELD_SURF_ATTACK
+        // || status_prev == FIGHTER_LINK_STATUS_KIND_SHIELD_SURF_END 
+        {
+            motion = "special_air_hi_shield";
+        }else {
             motion = "special_air_hi";
-        // }
+        }
         KineticModule::change_kinetic(agent.module_accessor, *FIGHTER_KINETIC_TYPE_AIR_STOP);
     }
     MotionModule::change_motion(agent.module_accessor, Hash40::new(motion), 0.0, 1.0, false, 0.0, false, false);

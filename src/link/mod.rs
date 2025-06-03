@@ -2,7 +2,10 @@ use crate::imports::*;
 use crate::common::consts::*;
 use crate::link::consts::vars::*;
 
-
+// unsafe extern "C" fn link_init(_agent: &mut L2CFighterCommon) {
+//     //enable paraglider after entry
+//     param_config::set_article_use_type(*WEAPON_KIND_LINK_PARASAIL, *ARTICLE_USETYPE_NORMAL);
+// }
 unsafe extern "C" fn link_main(agent: &mut L2CFighterCommon) {
     //reset flag if KO'ed
     if VarModule::is_flag(agent.module_accessor, instance::LINK_FLAG_SKYWARD_STRIKE_IS_CHARGED) {

@@ -26,14 +26,14 @@ pub unsafe fn battleobjectmoduleaccessor__finalize_modules(module_accessor: *mut
     CustomVarManager::remove_var_module(module_accessor);
     original!()(module_accessor)
 }
-
-#[skyline::hook(offset = 0x3a6670)]
-unsafe fn get_article_use_type_mask(weapon_kind: i32, entry_id: i32) -> u8 {
-    if weapon_kind == *WEAPON_KIND_LINK_PARASAIL {
-        return 1;
-    }
-    call_original!(weapon_kind, entry_id)
-}
+//hook for enabling paraglider if not using C#'s param_config
+// #[skyline::hook(offset = 0x3a6670)]
+// unsafe fn get_article_use_type_mask(weapon_kind: i32, entry_id: i32) -> u8 {
+//     if weapon_kind == *WEAPON_KIND_LINK_PARASAIL {
+//         return 1;
+//     }
+//     call_original!(weapon_kind, entry_id)
+// }
 
 
 pub fn install() {
@@ -41,8 +41,8 @@ pub fn install() {
         battleobjectmoduleaccessor__initialize_modules,
         battleobjectmoduleaccessor__start_modules,
         battleobjectmoduleaccessor__end_modules,
-        battleobjectmoduleaccessor__finalize_modules,
+        battleobjectmoduleaccessor__finalize_modules//,
 
-        get_article_use_type_mask
+        // get_article_use_type_mask
     );
 }
