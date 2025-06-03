@@ -31,7 +31,7 @@ Reworked Link's moveset to have more referances from The Legend of Zelda games.
 - d-air: landing on a downed opponent with over 100% will perfom the Finishing-Blow from TP guaranteeing a KO
 
 ### SPECIALS
-- nuetral-special: 
+- neutral-special: 
 	- can be canceled by holding shield 
 	- canceling will give Link the arrow item
 - up-special: changed to Revali's Gale
@@ -65,7 +65,7 @@ Reworked Link's moveset to have more referances from The Legend of Zelda games.
 - parry: changed animation to shield-parry from BotW/TotK
 
 ## Planned future changes:
-- canceling shield-special with up-special has different animation where shield stays on his foot
+- update Link's ingame movelist
 - replace idle-2 with sword twirl from TP
 - run animations changed to sprinting from BotW/TotK
 	- sword and shield on back
